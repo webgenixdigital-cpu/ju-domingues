@@ -210,6 +210,50 @@
   .photo3d-orbit.two{ left:-17px; right:-17px; bottom:-17px; height:calc(var(--s) + 34px); border-color:rgba(92,15,51,.25); border-bottom-color:transparent; transform:rotateX(72deg) rotateZ(40deg) translateZ(-12px); }
   @media (prefers-reduced-motion: reduce){ .photo3d{ transition:none; } }
 
+
+  /* ===== PEDIDO / RESUMO ===== */
+  button.btn{ font:inherit; border:0; cursor:pointer; }
+  .btn.added{ background:var(--sage-dark); }
+  .order-bar{
+    position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:45;
+    transform:translate(-50%, 140%); transition:transform .35s ease;
+    display:flex; align-items:center; gap:10px;
+    background:var(--sage-dark); color:#fff; border:0; cursor:pointer;
+    font:600 15px/1 Manrope, system-ui, sans-serif; padding:14px 22px; border-radius:99px;
+    box-shadow:0 10px 28px rgba(58,6,30,.4); white-space:nowrap;
+  }
+  .order-bar.show{ transform:translate(-50%,0); }
+  .order-bar b{ background:var(--sage); border-radius:99px; min-width:24px; height:24px; display:inline-grid; place-items:center; font-size:13px; }
+  body.has-order .whatsapp-float{ bottom:calc(84px + env(safe-area-inset-bottom,0px)); }
+  .sheet-backdrop{ position:fixed; inset:0; background:rgba(43,7,22,.5); z-index:60; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .sheet-backdrop.open{ opacity:1; pointer-events:auto; }
+  .sheet{
+    position:fixed; z-index:61; left:50%; bottom:0; width:min(520px,100%);
+    max-height:88vh; max-height:88dvh; overflow:auto;
+    transform:translate(-50%,105%); transition:transform .32s ease;
+    background:var(--ivory); border-radius:24px 24px 0 0;
+    padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px));
+    box-shadow:0 -10px 40px rgba(43,7,22,.3); font-family:Manrope, system-ui, sans-serif; color:var(--espresso);
+  }
+  .sheet.open{ transform:translate(-50%,0); }
+  @media(min-width:700px){ .sheet{ bottom:50%; border-radius:24px; transform:translate(-50%,60%) scale(.96); opacity:0; pointer-events:none; }
+    .sheet.open{ transform:translate(-50%,50%); opacity:1; pointer-events:auto; } }
+  .sheet h3{ font-family:Fraunces, Georgia, serif; font-size:22px; color:var(--sage-dark); margin-bottom:4px; }
+  .sheet .sub{ font-size:14px; color:#8a5a70; margin-bottom:14px; }
+  .sheet-close{ position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:50%; border:0; background:var(--sand); color:var(--sage-dark); font-size:20px; cursor:pointer; }
+  .order-list{ list-style:none; padding:0; margin:0 0 16px; }
+  .order-list li{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 0; border-bottom:1px dashed var(--sand-2); }
+  .order-list .n{ font-weight:600; font-size:15px; } .order-list .p{ display:block; font-size:12.5px; color:#9a6a80; margin-top:2px; }
+  .order-list button{ border:0; background:none; color:#b0507c; font-size:13px; cursor:pointer; text-decoration:underline; }
+  .sheet label{ display:block; font-size:13px; font-weight:600; margin:10px 0 5px; }
+  .sheet input{ width:100%; font:inherit; font-size:16px; padding:11px 13px; border:1.5px solid var(--sand-2); border-radius:12px; background:#fff; color:inherit; }
+  .sheet input:focus{ outline:none; border-color:var(--sage); }
+  .sheet-actions{ display:grid; gap:10px; margin-top:18px; }
+  .sheet-actions button{ font:600 15px Manrope, system-ui, sans-serif; padding:14px; border-radius:99px; cursor:pointer; }
+  .btn-more{ background:#fff; color:var(--sage-dark); border:1.5px solid var(--sage-dark); }
+  .btn-send{ background:#25D366; color:#fff; border:0; display:flex; align-items:center; justify-content:center; gap:8px; }
+  body.sheet-open{ overflow:hidden; }
+
   /* ===== BOTÕES RÁPIDOS (agenda / localização / instagram) ===== */
   .quick-actions{
     max-width:1080px;
@@ -663,7 +707,7 @@
     </span>
     <span>Agenda Digital</span>
   </a>
-  <a class="quick-action olive" href="COLE_AQUI_LINK_GOOGLE_MAPS" target="_blank" rel="noopener">
+  <a class="quick-action olive" href="https://www.google.com/maps/place/Rua+Edith+Monteiro+Vieira,+100+-+Vila+Togni,+Po%C3%A7os+de+Caldas+-+MG,+37718-106/@-21.7857983,-46.598997,20.75z/data=!4m6!3m5!1s0x94c9db78db494953:0xd712be22e01e4c99!8m2!3d-21.785761!4d-46.5990452!16s%2Fg%2F11twt2yr4j" target="_blank" rel="noopener">
     <span class="quick-action-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.58 7-12.5A7 7 0 0 0 5 9.5C5 14.42 12 22 12 22Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
     </span>
@@ -726,11 +770,28 @@
   <span>Fale no WhatsApp</span>
 </a>
 
+
+<button type="button" class="order-bar" id="orderBar" aria-label="Ver meu pedido">Meu pedido <b id="orderCount">0</b></button>
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <button type="button" class="sheet-close" id="sheetClose" aria-label="Fechar">×</button>
+  <h3 id="sheetTitle">Resumo do pedido</h3>
+  <p class="sub">Confira os serviços e envie sua solicitação pelo WhatsApp.</p>
+  <ul class="order-list" id="orderList"></ul>
+  <label for="oNome">Seu nome</label>
+  <input id="oNome" autocomplete="name" placeholder="Como podemos te chamar?">
+  <label for="oData">Dia e horário de preferência <span style="font-weight:400">(opcional)</span></label>
+  <input id="oData" placeholder="Ex: sábado de manhã">
+  <div class="sheet-actions">
+    <button type="button" class="btn-more" id="btnMore">+ Quero agendar mais um serviço</button>
+    <button type="button" class="btn-send" id="btnSend"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.2.1.7-.1 1.2Z"/></svg>Enviar pedido pelo WhatsApp</button>
+  </div>
+</section>
 <script>
 /* =========================================================
    NÚMERO DE WHATSAPP — edite só aqui (DDI+DDD+número, só dígitos)
    ========================================================= */
-const WHATSAPP_NUMBER = ""; // vazio = botão flutuante oculto
+const WHATSAPP_NUMBER = "5535988296306"; // formato: 55 + DDD + número, só dígitos (ex: 5535999998888)
 const AGENDA_URL = "https://nextgoagenda.com/juliana_domingues";
 
 /* =========================================================
@@ -739,7 +800,7 @@ const AGENDA_URL = "https://nextgoagenda.com/juliana_domingues";
    - name: nome do serviço
    - note: profissional (ex: "com Ju Domingues")
    - desc: descrição breve
-   O botão "Agendar" abre a agenda digital (AGENDA_URL).
+   O botão "Agendar" adiciona o serviço ao pedido, que é enviado pelo WhatsApp.
    ========================================================= */
 const SERVICES = [
   // ===== CABELO (Ju Domingues) =====
@@ -877,7 +938,7 @@ function renderCatalog(){
               ${s.note ? `<p class="card-note">${s.note}</p>` : ''}
               <p class="card-desc">${s.desc}</p>
               <div class="card-footer">
-                <a class="btn" href="${AGENDA_URL}" target="_blank" rel="noopener">Agendar →</a>
+                <button type="button" class="btn" data-add="${s.name.replace(/"/g,'&quot;')}" data-cat="${s.category}" data-pro="${(s.note||'').replace(/^com /,'')}">Agendar →</button>
               </div>
             </div>
           </article>
@@ -922,9 +983,48 @@ renderFilters();
 renderCatalog();
 
 // Botão flutuante usa o mesmo WHATSAPP_NUMBER definido acima, com mensagem genérica
-if(!WHATSAPP_NUMBER) document.getElementById('whatsappFloat').style.display='none';
 document.getElementById('whatsappFloat').href =
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Vim pelo catálogo da Juliana Domingues Hair Beauty Care e queria saber mais sobre os serviços de vocês!')}`;
+
+// ===== PEDIDO (carrinho de serviços) =====
+const pedido = [];
+const $o = id => document.getElementById(id);
+function renderPedido(){
+  $o('orderCount').textContent = pedido.length;
+  $o('orderBar').classList.toggle('show', pedido.length > 0);
+  document.body.classList.toggle('has-order', pedido.length > 0);
+  $o('orderList').innerHTML = pedido.map((p,i)=>`<li><div><span class="n">${p.name}</span><span class="p">${p.cat}${p.pro?' · com '+p.pro:''}</span></div><button type="button" data-rm="${i}">remover</button></li>`).join('')
+    || '<li><span class="p">Nenhum serviço selecionado.</span></li>';
+  document.querySelectorAll('.btn[data-add]').forEach(b=>{
+    const on = pedido.some(p=>p.name===b.dataset.add);
+    b.classList.toggle('added', on); b.textContent = on ? 'Adicionado ✓' : 'Agendar →';
+  });
+}
+function abrirResumo(){ $o('sheet').classList.add('open'); $o('sheetBackdrop').classList.add('open'); document.body.classList.add('sheet-open'); }
+function fecharResumo(){ $o('sheet').classList.remove('open'); $o('sheetBackdrop').classList.remove('open'); document.body.classList.remove('sheet-open'); }
+document.addEventListener('click', e=>{
+  const add = e.target.closest('.btn[data-add]');
+  if(add){
+    if(!pedido.some(p=>p.name===add.dataset.add)) pedido.push({name:add.dataset.add, cat:add.dataset.cat, pro:add.dataset.pro});
+    renderPedido(); abrirResumo(); return;
+  }
+  const rm = e.target.closest('[data-rm]');
+  if(rm){ pedido.splice(+rm.dataset.rm,1); renderPedido(); if(!pedido.length) fecharResumo(); }
+});
+$o('orderBar').onclick = abrirResumo;
+$o('btnMore').onclick = fecharResumo;
+$o('sheetClose').onclick = fecharResumo;
+$o('sheetBackdrop').onclick = fecharResumo;
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') fecharResumo(); });
+$o('btnSend').onclick = ()=>{
+  if(!pedido.length) return;
+  const nome = $o('oNome').value.trim(), data = $o('oData').value.trim();
+  const linhas = pedido.map(p=>`• ${p.name}${p.pro?` (com ${p.pro})`:''}`).join('\n');
+  const msg = `Olá! Vim pelo catálogo da Juliana Domingues Hair Beauty Care e gostaria de agendar:\n\n${linhas}`
+    + (nome?`\n\n*Nome:* ${nome}`:'') + (data?`\n*Preferência:* ${data}`:'') + `\n\nAguardo a confirmação dos horários. Obrigada!`;
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+};
+renderPedido();
 </script>
 
 </body>
